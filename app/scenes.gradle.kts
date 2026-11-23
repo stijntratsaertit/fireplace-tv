@@ -146,7 +146,7 @@ fun renderIcon(file: File) {
     ImageIO.write(img, "png", file)
 }
 
-fun manifest(scenes: List<Scene>): String {
+fun manifest(scenes: List<Scene>, appName: String): String {
     val aliases = scenes.filter { it.tile }.joinToString("\n") { s ->
         """
         <activity-alias
@@ -181,13 +181,13 @@ fun manifest(scenes: List<Scene>): String {
         android:allowBackup="false"
         android:banner="@drawable/banner_menu"
         android:icon="@drawable/app_icon"
-        android:label="Fireplace"
+        android:label="${xml(appName)}"
         android:theme="@android:style/Theme.DeviceDefault.NoActionBar.Fullscreen">
 
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:label="Fireplace">
+            android:label="${xml(appName)}">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -226,11 +226,13 @@ $aliases
 }
 
 val scenes = readScenes()
+@Suppress("UNCHECKED_CAST")
+val appName = ((JsonSlurper().parse(configFile) as Map<String, Any?>)["appName"] as? String)?.takeIf { it.isNotBlank() } ?: "Cozy Hearth"
 outDir.deleteRecursively()
 manifestOut.parentFile.mkdirs()
-manifestOut.writeText(manifest(scenes))
+manifestOut.writeText(manifest(scenes, appName))
 renderIcon(File(resOut, "drawable-xxxhdpi/app_icon.png"))
-renderBanner("Fireplace", "All scenes", Color(0xC2, 0x41, 0x0C), File(resOut, "drawable-xhdpi/banner_menu.png"))
+renderBanner(appName, "All scenes", Color(0xC2, 0x41, 0x0C), File(resOut, "drawable-xhdpi/banner_menu.png"))
 scenes.filter { it.tile }.forEach { s ->
     renderBanner(s.title, s.subtitle, s.color, File(resOut, "drawable-xhdpi/banner_${s.id}.png"))
 }

@@ -128,7 +128,7 @@ class WakeWatcherService : Service() {
         )
         val notification = Notification.Builder(this, CHANNEL)
             .setSmallIcon(android.R.drawable.ic_media_play)
-            .setContentTitle("Fireplace starts when the TV turns on")
+            .setContentTitle("Starts the fire when the TV turns on")
             .build()
         if (Build.VERSION.SDK_INT >= 34) {
             startForeground(1, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)

@@ -19,7 +19,7 @@ import android.widget.TextView
 import android.widget.Toast
 
 /**
- * The "Fireplace" tile: a remote-friendly list of every scene (including ones without a tile),
+ * The main app tile: a remote-friendly list of every scene (including ones without a tile),
  * plus the auto-start settings.
  */
 class MainActivity : Activity() {
@@ -42,7 +42,7 @@ class MainActivity : Activity() {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(64), dp(40), dp(64), dp(40))
         }
-        list.addView(heading("Fireplace", 34f))
+        list.addView(heading(applicationInfo.loadLabel(packageManager).toString(), 34f))
 
         var focusTarget: View? = null
         for (scene in scenes) {
@@ -92,7 +92,7 @@ class MainActivity : Activity() {
         val allowed = AutoStart.canOpenFromBackground(this)
         permissionRow.view.visibility = if (mode == AutoStart.Mode.OFF || allowed) View.GONE else View.VISIBLE
         permissionRow.subtitle.text =
-            "Needs \"Display over other apps\". Press OK, then turn it on for Fireplace."
+            "Needs \"Display over other apps\". Press OK, then turn it on for \"${applicationInfo.loadLabel(packageManager)}\"."
     }
 
     private fun openOverlaySettings() {
@@ -102,7 +102,7 @@ class MainActivity : Activity() {
         if (!opened) {
             Toast.makeText(
                 this,
-                "Open Settings → Apps → Special app access → Display over other apps → Fireplace",
+                "Open Settings → Apps → Special app access → Display over other apps → ${applicationInfo.loadLabel(packageManager)}",
                 Toast.LENGTH_LONG,
             ).show()
         }
