@@ -15,7 +15,8 @@ android {
         minSdk = 26
         targetSdk = 36
         // GitHub Actions sets GITHUB_RUN_NUMBER, so every build installs over the previous one.
-        versionCode = (System.getenv("GITHUB_RUN_NUMBER") ?: "1").toInt()
+        // Starts at 100 so it also installs over the earlier SmartTube-launcher version.
+        versionCode = 100 + (System.getenv("GITHUB_RUN_NUMBER") ?: "0").toInt()
         versionName = "2.0.$versionCode"
     }
 
