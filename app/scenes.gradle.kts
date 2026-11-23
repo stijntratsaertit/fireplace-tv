@@ -227,7 +227,7 @@ $aliases
 
 val scenes = readScenes()
 @Suppress("UNCHECKED_CAST")
-val appName = ((JsonSlurper().parse(configFile) as Map<String, Any?>)["appName"] as? String)?.takeIf { it.isNotBlank() } ?: "Cozy Hearth"
+val appName = ((JsonSlurper().parse(configFile) as Map<String, Any?>)["appName"] as? String)?.takeIf { it.isNotBlank() } ?: "Winter at Home"
 outDir.deleteRecursively()
 manifestOut.parentFile.mkdirs()
 manifestOut.writeText(manifest(scenes, appName))

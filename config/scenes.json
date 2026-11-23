@@ -1,12 +1,12 @@
 {
   "_help": "Edit this file to change your scenes, then push; GitHub builds a new APK at the same link. Each scene plays inside the app. 'search' is a YouTube search: the app picks a random long video from the results each time, and moves on to another when one ends. 'urls' is an optional list of specific YouTube videos or playlists to use instead of, or as well as, the search. 'minMinutes' skips shorter videos (live streams are always allowed). 'tile': true gives the scene its own launcher tile. 'appName' is the app's name on the TV; keep it distinctive (not 'Fireplace') so Google Assistant doesn't mistake it for a video or song. 'id' must be lowercase letters, digits and _, and should stay the same once installed.",
 
-  "appName": "Cozy Hearth",
+  "appName": "Winter at Home",
 
   "scenes": [
     {
       "id": "fireplace",
-      "title": "Hearth Classic",
+      "title": "Fire at Home",
       "subtitle": "Just the fire, crackling",
       "search": "realistic fireplace crackling 4k 10 hours no music",
       "minMinutes": 120,
@@ -15,7 +15,7 @@
     },
     {
       "id": "fireplace_jazz",
-      "title": "Hearth Jazz",
+      "title": "Jazz at Home",
       "subtitle": "Fire with soft jazz",
       "search": "cozy fireplace jazz 4k",
       "minMinutes": 90,
@@ -24,7 +24,7 @@
     },
     {
       "id": "fireplace_piano",
-      "title": "Hearth Piano",
+      "title": "Piano at Home",
       "subtitle": "Fire with calm piano",
       "search": "fireplace piano music 4k relaxing",
       "minMinutes": 90,
@@ -33,7 +33,7 @@
     },
     {
       "id": "fireplace_christmas",
-      "title": "Hearth Christmas",
+      "title": "Christmas at Home",
       "subtitle": "Fire with Christmas music",
       "search": "christmas fireplace music 4k",
       "minMinutes": 90,
@@ -42,7 +42,7 @@
     },
     {
       "id": "cabin_snow",
-      "title": "Hearth Snowy Cabin",
+      "title": "Cabin at Home",
       "subtitle": "Cabin fire, snow outside",
       "search": "cozy cabin fireplace snowfall ambience 4k",
       "minMinutes": 90,
@@ -51,7 +51,7 @@
     },
     {
       "id": "winter_window",
-      "title": "Hearth Winter Window",
+      "title": "Window at Home",
       "subtitle": "Snowfall through a window",
       "search": "snowy window view fireplace ambience 4k",
       "minMinutes": 60,
