@@ -1,0 +1,60 @@
+{
+  "_help": "Edit this file to change your scenes, then push; GitHub builds a new APK at the same link. Each scene plays inside the app. 'search' is a YouTube search: the app picks a random long video from the results each time, and moves on to another when one ends. 'urls' is an optional list of specific YouTube videos or playlists to use instead of, or as well as, the search. 'minMinutes' skips shorter videos (live streams are always allowed). 'tile': true gives the scene its own launcher tile and its own name for 'Hey Google, open <title>'. 'id' must be lowercase letters, digits and _, and should stay the same once installed.",
+
+  "scenes": [
+    {
+      "id": "fireplace",
+      "title": "Fireplace Classic",
+      "subtitle": "Just the fire, crackling",
+      "search": "realistic fireplace crackling 4k 10 hours no music",
+      "minMinutes": 120,
+      "color": "#C2410C",
+      "tile": true
+    },
+    {
+      "id": "fireplace_jazz",
+      "title": "Fireplace Jazz",
+      "subtitle": "Fire with soft jazz",
+      "search": "cozy fireplace jazz 4k",
+      "minMinutes": 90,
+      "color": "#B45309",
+      "tile": true
+    },
+    {
+      "id": "fireplace_piano",
+      "title": "Fireplace Piano",
+      "subtitle": "Fire with calm piano",
+      "search": "fireplace piano music 4k relaxing",
+      "minMinutes": 90,
+      "color": "#9A3412",
+      "tile": true
+    },
+    {
+      "id": "fireplace_christmas",
+      "title": "Fireplace Christmas",
+      "subtitle": "Fire with Christmas music",
+      "search": "christmas fireplace music 4k",
+      "minMinutes": 90,
+      "color": "#B91C1C",
+      "tile": true
+    },
+    {
+      "id": "cabin_snow",
+      "title": "Snowy Cabin",
+      "subtitle": "Cabin fire, snow outside",
+      "search": "cozy cabin fireplace snowfall ambience 4k",
+      "minMinutes": 90,
+      "color": "#1D4ED8",
+      "tile": true
+    },
+    {
+      "id": "winter_window",
+      "title": "Winter Window",
+      "subtitle": "Snowfall through a window",
+      "search": "snowy window view fireplace ambience 4k",
+      "minMinutes": 60,
+      "color": "#0F766E",
+      "tile": false
+    }
+  ]
+}
