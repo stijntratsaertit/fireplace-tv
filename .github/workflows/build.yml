@@ -8,6 +8,11 @@ on:
 permissions:
   contents: write
 
+# One build at a time; a newer push cancels an older build, so "latest" is always the newest commit.
+concurrency:
+  group: release
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
