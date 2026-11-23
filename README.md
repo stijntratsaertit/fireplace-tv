@@ -2,7 +2,7 @@
 
 An Android TV app for the Google TV Streamer that plays cozy fireplace scenes full screen, with no ads and no YouTube app.
 
-Each scene, like *Fireplace Jazz* or *Snowy Cabin*, searches YouTube on the TV. It picks a random long video (90+ minutes by default) and plays it in the app's own player. When the video ends it moves on to another one, skipping the last few it played, so it's rarely the same twice. Each scene is its own tile in Projectivy and its own name for "Hey Google, open …". The **Fireplace** tile shows a menu of all scenes.
+Each scene, like *Fireplace Jazz* or *Snowy Cabin*, searches YouTube on the TV. It picks a random long video (90+ minutes by default) and plays it in the app's own player. When the video ends it moves on to another one, skipping the last few it played, so it's rarely the same twice. Each scene is its own tile in Projectivy, and it can start by itself when the TV turns on. The **Fireplace** tile shows a menu of all scenes.
 
 ## Remote
 
@@ -36,11 +36,22 @@ Edit [`config/scenes.json`](config/scenes.json) (editing on github.com is fine) 
 - `id`: lowercase letters, digits and `_`; keep it the same once installed.
 - `color`: the tile banner colour. Banners are drawn automatically from the title and subtitle.
 
+## Start automatically when the TV turns on
+
+Voice commands can't open sideloaded apps (Google sends "open Fireplace" to YouTube or Spotify instead), so the app can start the fire by itself whenever the TV wakes up.
+
+1. Open the **Fireplace** tile and scroll down to **Start when the TV turns on**.
+2. **Auto-start**: press OK to cycle between *Off*, *Evenings, 5 pm to 3 am* and *Every time*.
+3. **Scene to start**: *Seasonal* (Christmas in December, otherwise the last one you played), *Last played*, or a fixed scene.
+4. The first time, choose **Allow auto-start** and turn on **Display over other apps** for Fireplace. Android requires this before an app may open itself.
+
+Then a Google Home routine that turns the TV on, e.g. "Hey Google, cozy time", also lights the fire. If a scene is already playing, waking the TV doesn't interrupt it.
+
 ## Google Home
 
-- "Hey Google, open Fireplace Jazz on the living room TV" should launch that tile (test it once; sideloaded apps aren't always recognised by voice).
+- Voice commands like "open Fireplace" don't work: Google doesn't know about sideloaded apps. Use auto-start instead (above).
 - The player registers as a normal media session, so "Hey Google, pause" and volume control from the Home app should work.
-- Routines: add "open Fireplace Christmas" as a custom action, e.g. in a "cozy time" routine that also dims the lights.
+- Routines: a routine that turns on the TV (plus dims the lights, etc.) starts the fire through auto-start.
 
 ## How it works and caveats
 
