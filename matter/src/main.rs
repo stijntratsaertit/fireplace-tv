@@ -18,7 +18,7 @@ use std::io::Write as _;
 use std::net::{Ipv6Addr, SocketAddr, SocketAddrV6, UdpSocket};
 use std::path::PathBuf;
 
-use embassy_futures::select::select4;
+use embassy_futures::select::{select, select4};
 use log::info;
 use rand::Rng;
 
@@ -118,8 +118,33 @@ fn main() -> Result<(), Error> {
     let mut mdns = pin!(mdns::run_mdns(&matter, &crypto));
     let mut transport = pin!(matter.run(&crypto, &socket, &socket, &socket));
 
-    let all = select4(&mut transport, &mut mdns, &mut respond, &mut im_job).coalesce();
+    let mut watch = pin!(watch_commissioning(&matter, &crypto));
+
+    let all = select(
+        select4(&mut transport, &mut mdns, &mut respond, &mut im_job).coalesce(),
+        &mut watch,
+    )
+    .coalesce();
     futures_lite::future::block_on(all)
+}
+
+/// Tells the app when the device gets paired or unpaired, and reopens pairing after it's
+/// removed from Google Home so it can be added again.
+async fn watch_commissioning<C: Crypto>(matter: &Matter<'_>, crypto: &C) -> Result<(), Error> {
+    let mut paired = matter.has_fabrics();
+    loop {
+        async_io::Timer::after(std::time::Duration::from_secs(2)).await;
+        let now = matter.has_fabrics();
+        if now != paired {
+            paired = now;
+            println!("FIREPLACE_COMMISSIONED {}", if now { "yes" } else { "no" });
+            std::io::stdout().flush().ok();
+            if !now {
+                info!("Removed from all controllers; opening pairing again");
+                matter.open_basic_comm_window(MAX_COMM_WINDOW_TIMEOUT_SECS, crypto, &())?;
+            }
+        }
+    }
 }
 
 /// Binds the Matter UDP socket (dual-stack, all interfaces) to the first free port in 5541..=5560.

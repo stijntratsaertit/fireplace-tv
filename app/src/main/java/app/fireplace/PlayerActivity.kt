@@ -137,8 +137,12 @@ class PlayerActivity : Activity() {
     }
 
     override fun onDestroy() {
-        if (current_ === this) current_ = null
-        MatterService.reportFire(false)
+        // Only report "off" if no newer player has taken over (Google Home switching on again
+        // while this one was closing would otherwise flip the switch back to off).
+        if (current_ === this) {
+            current_ = null
+            MatterService.reportFire(false)
+        }
         generation++
         main.removeCallbacksAndMessages(null)
         worker.shutdownNow()
@@ -316,8 +320,9 @@ class PlayerActivity : Activity() {
         /** The player on screen, if any, so Google Home can stop it. */
         @Volatile private var current_: PlayerActivity? = null
 
+        /** Google Home switched the fire off: close the app's task so the TV returns to where it was. */
         fun stopFromOutside() {
-            current_?.finish()
+            current_?.finishAndRemoveTask()
         }
 
         const val EXTRA_SCENE = "scene_id"
