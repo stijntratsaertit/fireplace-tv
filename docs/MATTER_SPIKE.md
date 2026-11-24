@@ -20,7 +20,7 @@ The request was for connectedhomeip's `virtual-device-app`. This build uses **rs
 | Passcode / discriminator | `20202021` / `3840`; discovery capability IP (on-network, no BLE) |
 | Manual pairing code | `3497-011-2332` |
 | QR payload | `MT:-24J0AFN00KA064IJ3P0WISA0DK5N1K8SQ1RYCU1O0` |
-| Ports | Matter UDP 5540; mDNS UDP 5353 (rs-matter built-in responder, `SO_REUSEADDR`) |
+| Ports | Matter UDP: first free port from 5541 (5540 is taken by GMS's own Matter hub), logged as `FIREPLACE_PORT <n>` and advertised over mDNS; mDNS UDP 5353 (rs-matter built-in responder, `SO_REUSEADDR` + `SO_REUSEPORT`) |
 
 The mDNS responder picks the interface with both an IPv4 address and an IPv6 link-local address, which should be `wlan0`. If Google Home can't find the device, check first for a conflict on 5353 with the system mDNS responder.
 

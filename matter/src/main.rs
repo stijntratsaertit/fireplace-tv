@@ -15,7 +15,7 @@
 use core::pin::pin;
 
 use std::io::Write as _;
-use std::net::UdpSocket;
+use std::net::{Ipv6Addr, SocketAddr, SocketAddrV6, UdpSocket};
 use std::path::PathBuf;
 
 use embassy_futures::select::select4;
@@ -40,9 +40,8 @@ use rs_matter::persist::DirKvBlobStore;
 use rs_matter::respond::DefaultResponder;
 use rs_matter::sc::pase::MAX_COMM_WINDOW_TIMEOUT_SECS;
 use rs_matter::transport::exchange::MatterBuffers;
-use rs_matter::transport::MATTER_SOCKET_BIND_ADDR;
 use rs_matter::utils::select::Coalesce;
-use rs_matter::{clusters, devices, root_endpoint, Matter, MATTER_PORT};
+use rs_matter::{clusters, devices, root_endpoint, Matter};
 
 mod mdns;
 mod plug;
@@ -68,7 +67,13 @@ fn main() -> Result<(), Error> {
     std::fs::create_dir_all(&storage)?;
     info!("Storing Matter state in {}", storage.display());
 
-    let matter = Matter::new(&TEST_DEV_DET, TEST_DEV_COMM, &TEST_DEV_ATT, MATTER_PORT);
+    // The TV's own Google Home hub already uses the standard Matter port (5540), so take the
+    // first free port from 5541. The port is advertised over mDNS, so controllers still find us.
+    let (socket, port) = bind_matter_socket()?;
+    info!("Matter transport bound to UDP port {port}");
+    println!("FIREPLACE_PORT {port}");
+
+    let matter = Matter::new(&TEST_DEV_DET, TEST_DEV_COMM, &TEST_DEV_ATT, port);
     let store = DirKvBlobStore::new(storage);
     let buffers: MatterBuffers = MatterBuffers::new();
     let state: EthInteractionModelState = EthInteractionModelState::new(EthNetwork::new_default());
@@ -110,12 +115,28 @@ fn main() -> Result<(), Error> {
     }
     std::io::stdout().flush().ok();
 
-    let socket = async_io::Async::<UdpSocket>::bind(MATTER_SOCKET_BIND_ADDR)?;
     let mut mdns = pin!(mdns::run_mdns(&matter, &crypto));
     let mut transport = pin!(matter.run(&crypto, &socket, &socket, &socket));
 
     let all = select4(&mut transport, &mut mdns, &mut respond, &mut im_job).coalesce();
     futures_lite::future::block_on(all)
+}
+
+/// Binds the Matter UDP socket (dual-stack, all interfaces) to the first free port in 5541..=5560.
+fn bind_matter_socket() -> Result<(async_io::Async<UdpSocket>, u16), Error> {
+    let mut last_err = None;
+    for port in 5541..=5560u16 {
+        let addr = SocketAddr::V6(SocketAddrV6::new(Ipv6Addr::UNSPECIFIED, port, 0, 0));
+        match async_io::Async::<UdpSocket>::bind(addr) {
+            Ok(socket) => return Ok((socket, port)),
+            Err(e) => {
+                log::warn!("Matter port {port} unavailable: {e}");
+                last_err = Some(e);
+            }
+        }
+    }
+    log::error!("No free Matter port in 5541..=5560");
+    Err(last_err.expect("at least one port was tried").into())
 }
 
 const NODE: Node<'static> = Node {

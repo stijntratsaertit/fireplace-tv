@@ -160,9 +160,15 @@ async fn run_builtin_mdns<C: Crypto>(matter: &Matter<'_>, crypto: C) -> Result<(
     // When using a custom UDP stack (e.g. for `no_std` environments), replace with a UDP socket bind + multicast join for your custom UDP stack
     // The returned socket should be splittable into two halves, where each half implements `UdpSend` and `UdpReceive` respectively
     let mut socket = Socket::new(Domain::IPV6, Type::DGRAM, Some(Protocol::UDP))?;
+    // Other apps on the TV (Google Home hub, Cast, Spotify) also listen on 5353, so share it.
     socket.set_reuse_address(true)?;
+    #[cfg(unix)]
+    socket.set_reuse_port(true)?;
     socket.set_only_v6(false)?;
-    socket.bind(&MDNS_SOCKET_DEFAULT_BIND_ADDR.into())?;
+    socket.bind(&MDNS_SOCKET_DEFAULT_BIND_ADDR.into()).map_err(|e| {
+        error!("mDNS: binding UDP 5353 failed: {e}");
+        e
+    })?;
     let socket = async_io::Async::<UdpSocket>::new_nonblocking(socket.into())?;
 
     socket
