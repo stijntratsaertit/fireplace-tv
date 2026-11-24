@@ -177,6 +177,8 @@ fun manifest(scenes: List<Scene>, appName: String): String {
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <!-- Wake the TV when Google Home switches a scene on -->
+    <uses-permission android:name="android.permission.TURN_SCREEN_ON" />
     <uses-feature android:name="android.software.leanback" android:required="false" />
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
 

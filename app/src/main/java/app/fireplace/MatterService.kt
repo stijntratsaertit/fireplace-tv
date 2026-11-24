@@ -245,7 +245,26 @@ class MatterService : Service() {
         }
     }
 
+    /**
+     * Wakes the Streamer (and, through HDMI-CEC, the TV) if it is asleep. The player also asks to
+     * turn the screen on; this wake lock is a fallback in case the activity start alone doesn't.
+     */
+    @Suppress("DEPRECATION")
+    private fun wakeUp() {
+        val power = getSystemService(android.os.PowerManager::class.java)
+        log("Before waking: interactive=${power.isInteractive}")
+        if (power.isInteractive) return
+        runCatching {
+            power.newWakeLock(
+                android.os.PowerManager.FULL_WAKE_LOCK or android.os.PowerManager.ACQUIRE_CAUSES_WAKEUP,
+                "fireplace:wake",
+            ).acquire(5_000)
+        }.onFailure { log("Wake lock failed: $it") }
+        main.postDelayed({ log("After waking: interactive=${power.isInteractive}") }, 1_500)
+    }
+
     fun launchScene(sceneId: String?): Boolean {
+        wakeUp()
         val scenes = Scenes.load(this)
         val id = sceneId ?: prefs.getString("last_scene", null)
         val scene = scenes.firstOrNull { it.id == id } ?: scenes.first()

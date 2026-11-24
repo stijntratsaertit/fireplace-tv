@@ -70,6 +70,10 @@ class PlayerActivity : Activity() {
         super.onCreate(savedInstanceState)
         current_ = this
         MatterService.start(this)
+        // When Google Home switches a scene on while the TV is asleep, wake it up (HDMI-CEC then
+        // turns the TV on and switches to this input).
+        setShowWhenLocked(true)
+        setTurnScreenOn(true)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         scenes = Scenes.load(this)
 

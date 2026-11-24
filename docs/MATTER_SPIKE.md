@@ -81,3 +81,12 @@ Each scene is now its own Matter node (On/Off Plug-in Unit) with its own process
 - **`/ping`:** reports the overlay permission and the playing scene, then one line per scene with slot, port, running, commissioned, pairing, on and code.
 - **Fixes:** the ON/OFF flapping, `paired=false` in `/ping`, and OFF returning to the menu instead of HOME.
 - **Testing the codes without a network:** `fireplace-matter <dir> --name X --discriminator N --passcode N --print-codes` prints the QR and pairing code and exits.
+
+## Update: wake the TV on ON (build 2.1.112+)
+
+- **Wake on ON:** when a plug switches ON, `MatterService.launchScene` wakes the device.
+  - If `PowerManager.isInteractive` is false, it takes a 5 s `FULL_WAKE_LOCK | ACQUIRE_CAUSES_WAKEUP`, and logs `interactive` before and after.
+  - `PlayerActivity` calls `setShowWhenLocked(true)` and `setTurnScreenOn(true)`.
+  - With HDMI-CEC on, waking the Streamer turns the TV on and switches the input to it.
+- **Permission:** the manifest declares `android.permission.TURN_SCREEN_ON`. If waking doesn't work, try `adb shell appops set app.fireplace TURN_SCREEN_ON allow`.
+- **Not done:** putting the device back to sleep on OFF. That needs `DEVICE_POWER`, which only system apps can get.
