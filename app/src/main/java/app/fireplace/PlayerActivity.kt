@@ -124,8 +124,6 @@ class PlayerActivity : Activity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        // An auto-start while a scene is already playing shouldn't interrupt it.
-        if (intent.getBooleanExtra(EXTRA_AUTO, false) && player.playWhenReady) return
         setIntent(intent)
         startScene(sceneFrom(intent))
     }
@@ -311,6 +309,5 @@ class PlayerActivity : Activity() {
 
     companion object {
         const val EXTRA_SCENE = "scene_id"
-        const val EXTRA_AUTO = "auto_start"
     }
 }

@@ -2,7 +2,7 @@
 
 An Android TV app for the Google TV Streamer that plays cozy fireplace scenes full screen, with no ads and no YouTube app.
 
-Each scene, like *Jazz at Home* or *Cabin at Home*, searches YouTube on the TV. It picks a random long video (90+ minutes by default) and plays it in the app's own player. When the video ends it moves on to another one, skipping the last few it played, so it's rarely the same twice. Each scene is its own tile in Projectivy, and it can start by itself when the TV turns on. The **Winter at Home** tile shows a menu of all scenes.
+Each scene, like *Jazz at Home* or *Cabin at Home*, searches YouTube on the TV. It picks a random long video (90+ minutes by default) and plays it in the app's own player. When the video ends it moves on to another one, skipping the last few it played, so it's rarely the same twice. Each scene is its own tile in Projectivy. The **Winter at Home** tile shows a menu of all scenes.
 
 ## Remote
 
@@ -36,23 +36,11 @@ Edit [`config/scenes.json`](config/scenes.json) (editing on github.com is fine) 
 - `id`: lowercase letters, digits and `_`; keep it the same once installed.
 - `color`: the tile banner colour. Banners are drawn automatically from the title and subtitle.
 
-## Start automatically when the TV turns on
-
-Voice commands aren't reliable for sideloaded apps, so the app can also start the fire by itself whenever the TV wakes up.
-
-1. Open the **Winter at Home** tile and scroll down to **Start when the TV turns on**.
-2. **Auto-start**: press OK to cycle between *Off*, *Evenings, 5 pm to 3 am* and *Every time*.
-3. **Scene to start**: *Seasonal* (Christmas in December, otherwise the last one you played), *Last played*, or a fixed scene.
-4. The first time, choose **Allow auto-start** and turn on **Display over other apps** for Winter at Home. Android requires this before an app may open itself.
-
-Then a Google Home routine that turns the TV on, e.g. "Hey Google, cozy time", also lights the fire. If a scene is already playing, waking the TV doesn't interrupt it.
-
 ## Google Home
 
-- Voice: hold the remote's Assistant button and say "open Winter at Home" or "open Jazz at Home". The app has its own name because Google turns "open Fireplace" into a YouTube or Spotify search. Voice from a phone or speaker is less reliable than the remote; auto-start (above) works either way.
+- Opening the app by voice or from a Google Home automation doesn't work: Google understands "open Jazz at Home" and sends it to the TV, but Google TV ignores launch commands for sideloaded apps. Start scenes from the tiles instead.
 - `appName` in `config/scenes.json` sets the app's name on the TV.
 - The player registers as a normal media session, so "Hey Google, pause" and volume control from the Home app should work.
-- Routines: a routine that turns on the TV (plus dims the lights, etc.) starts the fire through auto-start.
 
 ## How it works and caveats
 
