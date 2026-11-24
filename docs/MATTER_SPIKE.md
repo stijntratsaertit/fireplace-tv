@@ -56,3 +56,28 @@ The mDNS responder picks the interface with both an IPv4 address and an IPv6 lin
 **Not verified:** anything on a real device or network, because the build environment has no IPv6 or Android device.
 
 When testing on the TV, report logcat (tag `FireplaceSpike`) covering startup, mDNS and commissioning, together with the `/ping` output.
+
+## Update: one Google Home switch per scene (build 2.1.111+)
+
+Each scene is now its own Matter node (On/Off Plug-in Unit) with its own process, storage, port, discriminator, passcode and mDNS host name. Every node uses VID `0xFFF1` / PID `0x8001`, so one Developer Console integration covers them all.
+
+- **Slots:** each scene gets a fixed slot on first use, stored in the `matter_slot_<id>` prefs. Slot 0 is `fireplace`.
+  - discriminator = 3840 + slot
+  - preferred port = 5541 + slot, falling back to the first free port in 5541..5580
+  - mDNS host = `57484F4D45` + slot (2 hex digits)
+  - passcode from the list in `MatterService.PASSCODES` (slot 0 = 20202021)
+- **Migration:** the previously paired single node, stored in `filesDir/matter/*`, moves to `filesDir/matter/fireplace` and keeps its discriminator 3840 and passcode 20202021. Its manual code stays `3497-011-2332`, so it shouldn't need re-pairing.
+- **Which nodes run:**
+  - only paired nodes (prefs `matter_paired`)
+  - plus a node while it is being added from the menu; the binary runs with `--pair` and opens the commissioning window only then
+  - closing the pairing dialog before pairing completes stops that node
+- **Behaviour:**
+  - Switching a scene ON plays it, and every other node reports OFF.
+  - Switching the playing scene OFF calls `finishAndRemoveTask`, so the TV returns to where it was. OFF on a scene that isn't playing is ignored.
+  - When the player closes, all nodes report OFF.
+- **Menu:** the "Google Home" section lists every scene with its status.
+  - OK on a scene that isn't added starts pairing and shows its QR code and manual code.
+  - OK on a paired scene offers "Remove", which stops the node and deletes its storage. Also remove it in the Google Home app.
+- **`/ping`:** reports the overlay permission and the playing scene, then one line per scene with slot, port, running, commissioned, pairing, on and code.
+- **Fixes:** the ON/OFF flapping, `paired=false` in `/ping`, and OFF returning to the menu instead of HOME.
+- **Testing the codes without a network:** `fireplace-matter <dir> --name X --discriminator N --passcode N --print-codes` prints the QR and pairing code and exits.

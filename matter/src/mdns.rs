@@ -25,12 +25,12 @@ use socket2::{Domain, Protocol, Socket, Type};
 
 /// Advertises the device with rs-matter's built-in mDNS responder (Android has no
 /// Avahi or systemd-resolved to delegate to).
-pub async fn run_mdns<C: Crypto>(matter: &Matter<'_>, crypto: C) -> Result<(), Error> {
-    run_builtin_mdns(matter, crypto).await
+pub async fn run_mdns<C: Crypto>(matter: &Matter<'_>, crypto: C, hostname: &str) -> Result<(), Error> {
+    run_builtin_mdns(matter, crypto, hostname).await
 }
 
 #[allow(unused)]
-async fn run_builtin_mdns<C: Crypto>(matter: &Matter<'_>, crypto: C) -> Result<(), Error> {
+async fn run_builtin_mdns<C: Crypto>(matter: &Matter<'_>, crypto: C, hostname: &str) -> Result<(), Error> {
     use std::net::UdpSocket;
 
     use log::{debug, error, info, warn};
@@ -183,7 +183,8 @@ async fn run_builtin_mdns<C: Crypto>(matter: &Matter<'_>, crypto: C) -> Result<(
             &socket,
             &socket,
             &Host {
-                hostname: "001122334455", //"rs-matter-demo",
+                // Each scene runs its own responder, so each needs its own host name.
+                hostname,
                 ip: ipv4_addr,
                 ipv6: &ipv6_addrs,
             },

@@ -141,7 +141,7 @@ class PlayerActivity : Activity() {
         // while this one was closing would otherwise flip the switch back to off).
         if (current_ === this) {
             current_ = null
-            MatterService.reportFire(false)
+            MatterService.reportFire(null)
         }
         generation++
         main.removeCallbacksAndMessages(null)
@@ -185,7 +185,7 @@ class PlayerActivity : Activity() {
 
     private fun startScene(next: Scene) {
         scene = next
-        MatterService.reportFire(true)
+        MatterService.reportFire(next.id)
         prefs.edit().putString("last_scene", next.id).apply()
         pool.clear()
         failuresInARow = 0
@@ -324,6 +324,10 @@ class PlayerActivity : Activity() {
         fun stopFromOutside() {
             current_?.finishAndRemoveTask()
         }
+
+        /** The scene on screen, or null if the fire isn't showing. */
+        fun currentSceneId(): String? =
+            current_?.takeIf { !it.isFinishing }?.let { runCatching { it.scene.id }.getOrNull() }
 
         const val EXTRA_SCENE = "scene_id"
     }
