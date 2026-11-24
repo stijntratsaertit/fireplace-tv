@@ -2,7 +2,7 @@ name: Build APK
 
 on:
   push:
-    branches: [main]
+    branches: [main, matter-spike]
   workflow_dispatch:
 
 permissions:
@@ -10,7 +10,7 @@ permissions:
 
 # One build at a time; a newer push cancels an older build, so "latest" is always the newest commit.
 concurrency:
-  group: release
+  group: release-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -23,6 +23,13 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
+
+      # The Google Home (Matter) plug is Rust, cross-compiled for the TV's 32-bit ARM CPU.
+      - name: Set up Rust for Android
+        if: hashFiles('matter/Cargo.toml') != ''
+        run: |
+          rustup target add armv7-linux-androideabi
+          echo "ANDROID_NDK_HOME=$ANDROID_NDK_LATEST_HOME" >> "$GITHUB_ENV"
 
       - name: Build APK
         run: |
@@ -38,6 +45,7 @@ jobs:
       # Fixed download link for the TV's Downloader app:
       # https://github.com/<owner>/<repo>/releases/latest/download/fireplace.apk
       - name: Publish release
+        if: github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: build-${{ github.run_number }}
@@ -45,3 +53,17 @@ jobs:
           body: "Built from ${{ github.sha }}. Install with the Downloader app on the TV or with adb."
           make_latest: "true"
           files: fireplace.apk
+
+      # Test builds from the matter-spike branch go to their own release, never "latest".
+      - name: Publish Matter test build
+        if: github.ref == 'refs/heads/matter-spike'
+        run: cp fireplace.apk fireplace-spike.apk
+      - if: github.ref == 'refs/heads/matter-spike'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: matter-spike
+          name: Matter test build
+          body: "Test build with the Google Home (Matter) plug, from ${{ github.sha }}. Not the normal app download."
+          prerelease: true
+          make_latest: "false"
+          files: fireplace-spike.apk

@@ -68,6 +68,8 @@ class PlayerActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        current_ = this
+        MatterService.start(this)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         scenes = Scenes.load(this)
 
@@ -135,6 +137,8 @@ class PlayerActivity : Activity() {
     }
 
     override fun onDestroy() {
+        if (current_ === this) current_ = null
+        MatterService.reportFire(false)
         generation++
         main.removeCallbacksAndMessages(null)
         worker.shutdownNow()
@@ -177,6 +181,7 @@ class PlayerActivity : Activity() {
 
     private fun startScene(next: Scene) {
         scene = next
+        MatterService.reportFire(true)
         prefs.edit().putString("last_scene", next.id).apply()
         pool.clear()
         failuresInARow = 0
@@ -308,6 +313,13 @@ class PlayerActivity : Activity() {
     private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
 
     companion object {
+        /** The player on screen, if any, so Google Home can stop it. */
+        @Volatile private var current_: PlayerActivity? = null
+
+        fun stopFromOutside() {
+            current_?.finish()
+        }
+
         const val EXTRA_SCENE = "scene_id"
     }
 }
