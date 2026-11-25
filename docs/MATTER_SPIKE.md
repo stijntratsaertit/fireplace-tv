@@ -90,3 +90,8 @@ Each scene is now its own Matter node (On/Off Plug-in Unit) with its own process
   - With HDMI-CEC on, waking the Streamer turns the TV on and switches the input to it.
 - **Permission:** the manifest declares `android.permission.TURN_SCREEN_ON`. If waking doesn't work, try `adb shell appops set app.fireplace TURN_SCREEN_ON allow`.
 - **Not done:** putting the device back to sleep on OFF. That needs `DEVICE_POWER`, which only system apps can get.
+
+## Update: removing a scene from Google Home (build 2.1.113+)
+
+- Stopping a node can no longer crash the app. The output reader catches `IOException`/`InterruptedIOException`, and the wait thread catches `InterruptedException`.
+- When a paired node reports `FIREPLACE_COMMISSIONED no` (removed in the Google Home app), it is forgotten completely: stopped, its `filesDir/matter/<scene>` deleted, and dropped from `matter_paired`. The menu then shows it as "Not in Google Home", and it isn't restarted on launch.

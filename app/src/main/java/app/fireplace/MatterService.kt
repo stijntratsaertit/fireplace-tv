@@ -91,7 +91,7 @@ class MatterService : Service() {
             writer = PrintWriter(OutputStreamWriter(p.outputStream), true)
             Thread({ read(p) }, "matter-${scene.id}").start()
             Thread({
-                val code = p.waitFor()
+                val code = try { p.waitFor() } catch (e: InterruptedException) { return@Thread }
                 if (process !== p) return@Thread
                 log("${scene.id}: plug exited with code $code")
                 process = null
@@ -116,7 +116,18 @@ class MatterService : Service() {
             Thread { runCatching { w.println(if (newOn) "on" else "off") } }.start()
         }
 
+        /** Reads the plug's output. Ends quietly when the plug is stopped (never crashes the app). */
         private fun read(p: Process) {
+            try {
+                readLines(p)
+            } catch (e: java.io.IOException) {
+                if (process === p) log("${scene.id}: lost the plug's output: $e")
+            } catch (e: Exception) {
+                log("${scene.id}: error reading the plug's output: $e")
+            }
+        }
+
+        private fun readLines(p: Process) {
             BufferedReader(InputStreamReader(p.inputStream)).useLines { lines ->
                 for (line in lines) {
                     Log.i(TAG, "plug ${scene.id}: $line")
@@ -226,11 +237,12 @@ class MatterService : Service() {
             node.pairing = false
             prefs.edit().putStringSet(PAIRED, pairedIds() + node.scene.id).apply()
             log("${node.scene.id}: paired with Google Home")
-        } else if (wasPaired || (!node.pairing && node.scene.id in pairedIds())) {
-            // Removed from Google Home: forget it and stop its plug.
-            prefs.edit().putStringSet(PAIRED, pairedIds() - node.scene.id).apply()
+        } else if (!node.pairing && (wasPaired || node.scene.id in pairedIds())) {
+            // Removed from Google Home: forget it completely (stop, delete its state), so it isn't
+            // restarted on every launch. It can be added again from the menu.
             log("${node.scene.id}: removed from Google Home")
-            if (!node.pairing) node.stop()
+            forget(node.scene.id)
+            return
         }
         listeners.forEach { main.post(it) }
     }
