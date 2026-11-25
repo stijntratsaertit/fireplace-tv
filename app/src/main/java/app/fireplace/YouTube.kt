@@ -70,11 +70,16 @@ object YouTube {
             val handler = service.searchQHFactory.fromQuery(scene.search, listOf("videos"), "")
             val first = SearchInfo.getInfo(service, handler)
             val items = first.relatedItems.filterIsInstance<StreamInfoItem>().toMutableList()
-            if (first.hasNextPage()) {
-                runCatching { SearchInfo.getMoreItems(service, handler, first.nextPage) }.getOrNull()
-                    ?.items?.filterIsInstance<StreamInfoItem>()?.let(items::addAll)
+            // A few more pages, since the title filters below drop some results.
+            var page = first.nextPage
+            repeat(2) {
+                if (page == null) return@repeat
+                val more = runCatching { SearchInfo.getMoreItems(service, handler, page) }.getOrNull()
+                more?.items?.filterIsInstance<StreamInfoItem>()?.let(items::addAll)
+                page = more?.nextPage
             }
             val minSeconds = scene.minMinutes * 60L
+            items.removeAll { !scene.accepts(it.name) }
             val long = items.filter { it.streamType == StreamType.LIVE_STREAM || it.duration >= minSeconds }
             // If nothing is long enough, fall back to the longest results rather than nothing.
             val chosen = long.ifEmpty { items.sortedByDescending { it.duration }.take(5) }
