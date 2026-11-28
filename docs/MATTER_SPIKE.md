@@ -105,9 +105,8 @@ Each scene is now its own Matter node (On/Off Plug-in Unit) with its own process
   3. Safety net: 5 s after an ON, if that scene is still on but its player isn't showing, it is launched once more (logged).
   4. Lifecycle logging: `Player: onCreate/onNewIntent/onStart/onResume/onPause/onStop/onDestroy` lines, each with the reason, under tag `FireplaceSpike`.
 
-## Update: tighter video filters and logging the pick (build 2.1.116+)
+## Update: Piano filter and logging the pick (build 2.1.117+)
 
-- **Fire at Home** must mention fireplace or hearth. It excludes outdoor fires (campfire, bonfire, camping, fire pit, outdoor, nature, beach, …) and music genres (jazz, piano, saxophone, guitar, classical, lofi, christmas music, carols). "No Music" titles stay in.
-- **Jazz at Home** also excludes outdoor fires.
-- **Piano at Home** also excludes outdoor fires plus jazz, saxophone and sax, so "Piano Jazz" videos stay in Jazz at Home.
+- **Piano at Home** also excludes jazz, saxophone and sax, so "Piano Jazz" videos stay in Jazz at Home.
+- **Fire at Home and Jazz at Home are unchanged from 2.1.114.** Campfire and outdoor fire videos are fine there. Build 2.1.116 briefly excluded them; that was reverted.
 - **Logging:** the player logs `Player: picked for <scene> from N candidates (M not played recently): <title> <url>` and then `Player: playing <scene>: <title> <url> (<stream type>)` under `FireplaceSpike`.
