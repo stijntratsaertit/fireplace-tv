@@ -252,6 +252,7 @@ class PlayerActivity : Activity() {
                 if (candidates.isEmpty()) throw IllegalStateException("No videos found for \"${forScene.search}\"")
                 val fresh = candidates.filter { videoId(it.url) !in recent && it.url != current?.url }
                 val pick = (fresh.ifEmpty { candidates.filter { it.url != current?.url }.ifEmpty { candidates } }).random()
+                lifecycle("picked for ${forScene.id} from ${candidates.size} candidates (${fresh.size} not played recently): ${pick.title} ${pick.url}")
                 val playable = YouTube.resolve(pick)
                 main.post {
                     if (gen != generation) return@post
@@ -269,6 +270,7 @@ class PlayerActivity : Activity() {
         if (current?.url != candidate.url) currentRetries = 0
         current = candidate
         nowTitle = playable.title
+        lifecycle("playing ${scene.id}${if (startAtMs > 0) " from ${startAtMs / 1000}s" else ""}: ${playable.title} ${candidate.url} (${playable::class.simpleName})")
         rememberPlayed(candidate.url)
         player.setMediaSource(mediaSource(playable))
         if (startAtMs > 0) player.seekTo(startAtMs)
