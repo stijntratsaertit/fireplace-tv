@@ -252,6 +252,14 @@ class MatterService : Service() {
         log("Google Home switched ${node.scene.id} ${if (on) "on" else "off"}")
         if (on) {
             launchScene(node.scene.id)
+            // Safety net: if the fire didn't stay on screen (e.g. lost during the TV waking up),
+            // try once more.
+            main.postDelayed({
+                if (node.on && PlayerActivity.currentSceneId() != node.scene.id) {
+                    log("${node.scene.id} is on but the player isn't showing; launching again")
+                    launchScene(node.scene.id)
+                }
+            }, 5_000)
         } else if (PlayerActivity.currentSceneId() == node.scene.id) {
             PlayerActivity.stopFromOutside()
         }
@@ -284,11 +292,13 @@ class MatterService : Service() {
             log("Can't open the player from the background: 'Display over other apps' is off")
         }
         return try {
-            startActivity(
-                Intent(this, PlayerActivity::class.java)
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    .putExtra(PlayerActivity.EXTRA_SCENE, scene.id),
-            )
+            val intent = Intent(this, PlayerActivity::class.java)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                .putExtra(PlayerActivity.EXTRA_SCENE, scene.id)
+            // Start in a clean task so a leftover menu underneath can never come to the front.
+            // (Not while the fire is already showing: then the player just switches scene.)
+            if (PlayerActivity.currentSceneId() == null) intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            startActivity(intent)
             log("Opened ${scene.id}")
             true
         } catch (e: Exception) {

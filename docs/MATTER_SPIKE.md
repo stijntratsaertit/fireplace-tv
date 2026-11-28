@@ -95,3 +95,12 @@ Each scene is now its own Matter node (On/Off Plug-in Unit) with its own process
 
 - Stopping a node can no longer crash the app. The output reader catches `IOException`/`InterruptedIOException`, and the wait thread catches `InterruptedException`.
 - When a paired node reports `FIREPLACE_COMMISSIONED no` (removed in the Google Home app), it is forgotten completely: stopped, its `filesDir/matter/<scene>` deleted, and dropped from `matter_paired`. The menu then shows it as "Not in Google Home", and it isn't restarted on launch.
+
+## Update: fire stays on screen when waking from standby (build 2.1.115+)
+
+- **Cause:** `PlayerActivity.onStop()` always called `finish()`, which is how Home or TV-off stopped the fire. Waking from standby stops the activity briefly during the screen-on/keyguard transition, so it finished itself about 300 ms after starting and the menu underneath came to the front.
+- **Fixes:**
+  1. Within 8 s of a (re)launch, `onStop` keeps the player: it pauses playback and resumes in `onStart`. After that, `onStop` finishes as before (Home, TV off, another app). Back and OFF from Google Home always finish.
+  2. Launches from Google Home use `FLAG_ACTIVITY_CLEAR_TASK` when no player is showing, so the player starts in a clean task and no leftover `MainActivity` sits underneath.
+  3. Safety net: 5 s after an ON, if that scene is still on but its player isn't showing, it is launched once more (logged).
+  4. Lifecycle logging: `Player: onCreate/onNewIntent/onStart/onResume/onPause/onStop/onDestroy` lines, each with the reason, under tag `FireplaceSpike`.

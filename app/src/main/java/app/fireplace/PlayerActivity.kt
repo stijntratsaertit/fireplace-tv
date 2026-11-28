@@ -8,6 +8,7 @@ import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import android.util.Log
 import android.util.TypedValue
 import android.view.Gravity
@@ -56,6 +57,11 @@ class PlayerActivity : Activity() {
     private lateinit var session: MediaSession
     private lateinit var overlay: TextView
 
+    private var startedAt = 0L
+    private var pausedByWake = false
+
+    private fun lifecycle(what: String) = Log.i(MatterService.TAG, "Player: $what")
+
     private val pool = mutableListOf<Candidate>()
     private var current: Candidate? = null
     private var nowTitle = ""
@@ -69,6 +75,8 @@ class PlayerActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         current_ = this
+        startedAt = SystemClock.elapsedRealtime()
+        lifecycle("onCreate scene=${intent.getStringExtra(EXTRA_SCENE)}")
         MatterService.start(this)
         // When Google Home switches a scene on while the TV is asleep, wake it up (HDMI-CEC then
         // turns the TV on and switches to this input).
@@ -130,17 +138,51 @@ class PlayerActivity : Activity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        startedAt = SystemClock.elapsedRealtime()
+        lifecycle("onNewIntent scene=${intent.getStringExtra(EXTRA_SCENE)}")
         setIntent(intent)
         startScene(sceneFrom(intent))
     }
 
+    override fun onStart() {
+        super.onStart()
+        lifecycle("onStart")
+        if (pausedByWake) {
+            pausedByWake = false
+            player.playWhenReady = true
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        lifecycle("onResume")
+    }
+
+    override fun onPause() {
+        lifecycle("onPause")
+        super.onPause()
+    }
+
     override fun onStop() {
         super.onStop()
+        val sinceStart = SystemClock.elapsedRealtime() - startedAt
+        if (sinceStart < WAKE_GRACE_MS) {
+            // Waking the TV from standby briefly stops the activity (keyguard / screen-on
+            // transition). Don't treat that as leaving: just pause until we're visible again.
+            lifecycle("onStop ${sinceStart}ms after start: wake transition, keeping the player")
+            if (player.playWhenReady) {
+                pausedByWake = true
+                player.playWhenReady = false
+            }
+            return
+        }
         // Leaving the app (Home button, TV off, another app) stops the fire.
+        lifecycle("onStop: leaving the app, finishing")
         finish()
     }
 
     override fun onDestroy() {
+        lifecycle("onDestroy finishing=$isFinishing")
         // Only report "off" if no newer player has taken over (Google Home switching on again
         // while this one was closing would otherwise flip the switch back to off).
         if (current_ === this) {
@@ -326,8 +368,14 @@ class PlayerActivity : Activity() {
 
         /** Google Home switched the fire off: close the app's task so the TV returns to where it was. */
         fun stopFromOutside() {
-            current_?.finishAndRemoveTask()
+            current_?.let {
+                it.lifecycle("finish: switched off from Google Home")
+                it.finishAndRemoveTask()
+            }
         }
+
+        /** Stops after this long after a (re)launch are treated as the wake-up transition. */
+        private const val WAKE_GRACE_MS = 8_000L
 
         /** The scene on screen, or null if the fire isn't showing. */
         fun currentSceneId(): String? =
